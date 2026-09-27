@@ -1,0 +1,13 @@
+bin/
+obj*/
+*.log
+evidence/
+backups/
+dist/
+*.zip
+*.user
+*.suo
+# Workspace-only historical comparisons depend on sibling MOD checkouts.
+tests/PerformanceTests.cpp
+tests/VisualRegressionTests.cpp
+PERFORMANCE_REVIEW_JA.md
