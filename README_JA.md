@@ -1,4 +1,4 @@
-# アクションナイトロ 0.1.0-alpha.6
+# アクションナイトロ 0.1.0-alpha.7
 
 NFS Most Wanted (2005) の自然NOS回復を、運転アクションによる回復に置き換える独立ASIです。
 
@@ -23,7 +23,7 @@ NFS Most Wanted (2005) の自然NOS回復を、運転アクションによる回
 
 ## 導入・更新
 
-対応対象はNFSPatcher版の英語1.3 EXEとその4GBパッチ版です。異なるEXEはフック前に拒否します。多言語表示対応は、各地域版EXEへの対応を意味しません。既存ASIローダーが必要です。
+単一ASIで、確認済みのRedux 3.04（英語1.3・4GB版）とNFSPatcher版の英語1.3 EXE／4GBパッチ版に対応します。正確なEXE識別条件は[互換性一覧](COMPATIBILITY.md)を参照してください。異なるEXEはフック前に拒否します。多言語表示対応は、各地域版EXEへの対応を意味しません。既存ASIローダーが必要です。
 
 1. ゲームを終了し、リリースZIPを展開します。
 2. PowerShellで `Install.ps1 -GameDirectory "ゲームのフォルダー"` を実行します。書き込み権限が必要です。
@@ -39,7 +39,7 @@ NFS Most Wanted (2005) の自然NOS回復を、運転アクションによる回
 
 `en`, `en-GB`, `fr`, `de`, `it`, `es`, `es-MX`, `nl`, `sv`, `da`, `fi`, `pl`, `ru`, `ja`, `ko`, `zh-TW`, `zh-CN`, `th`
 
-`[HUD] Language=auto` はWidescreen Fixの言語指定、ゲームの32bitレジストリ、ネイティブ言語表のファイル名の順で選び、不明なら英語にします。日本語Bridgeで英語EXEを使う構成にも対応します。`Language=ja` 等で固定もできます。設定変更後は再起動してください。
+`[HUD] Language=auto` はWidescreen Fixの言語指定、Widescreen FixのWriteSettingsToFile有効時のローカルSettings.ini、ゲームの32bitレジストリ、ネイティブ言語表のファイル名の順で選び、不明なら英語にします。日本語Bridgeで英語EXEを使う構成にも対応します。`Language=ja` 等で固定もできます。設定変更後は再起動してください。
 
 Windowsの言語別フォントを使い、長い項目は縮小して行幅に収めます。CJK・タイ語は対応Windowsフォントが必要です。ゲームのフォント資産は変更しません。翻訳は本MOD用の表記で、公式ゲームから抜き出した文章ではありません。HUDはRight/Bottom/Widthで配置を調整できます。CustomHUDのメーター位置への自動追従はありません。
 
@@ -66,3 +66,9 @@ Windowsの言語別フォントを使い、長い項目は縮小して行幅に�
 Visual Studio Build Tools 2022、v143、Windows SDK、Win32、C++17で `tools/Build.ps1` を実行します。ゲームを起動せず隔離試験を実施します。Pythonの追加検証はpefile/capstone/unicornと各自のゲーム導入先が必要です。
 
 第三者コードはMinHookとnlohmann/jsonで、それぞれのライセンスを保持しています。ゲーム資産やEXEは配布物に含めません。
+
+## alpha.7：Redux/Main共通ASI
+
+Redux 3.04の確認済みEXEをサイズとSHA256の組で識別します。フック箇所の保護検査は維持し、判定・回復量・描画を変更せず、専用の別ASIも不要です。ReduxのSAVE内Settings.iniを参照し、同じPCのMain側レジストリ言語を誤って優先しないようにしました。
+
+両環境の実EXEを出荷用SHA256処理で確認し、11箇所の静的検査とReduxの3260件のネイティブ車線選択比較、隔離ビルド・試験が通過しました。Reduxでの起動時フック共存、NOS/HUD表示、試走の確認は未実施です。

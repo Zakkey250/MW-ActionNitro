@@ -9,10 +9,12 @@ if($LASTEXITCODE){throw 'Reward test build failed'}
 & "$taskRoot\bin\RewardTests.exe"
 if($LASTEXITCODE){throw 'Reward tests failed'}
 Copy-Item -LiteralPath "$taskRoot\NFSMWActionNitro.ini" -Destination "$taskRoot\bin\NFSMWActionNitro.ini"
-foreach($taskTest in @('HudTests','RejectTests','HookTests','RoadTests','LocalizationTests','UpdateTests')){
+foreach($taskTest in @('HudTests','RejectTests','HookTests','RoadTests','LocalizationTests','UpdateTests','TargetTests')){
  & $taskBuild "$taskRoot\NFSMWActionNitro.vcxproj" /p:Configuration=Release /p:Platform=Win32 /p:TestHarness=true "/p:TestName=$taskTest" /v:minimal /nologo
  if($LASTEXITCODE){throw "$taskTest build failed"}
 }
+& "$taskRoot\bin\TargetTests.exe"
+if($LASTEXITCODE){throw 'Target tests failed'}
 # Closed stdin prevents the optional native-fixture reader from waiting interactively.
 '' | & "$taskRoot\bin\RoadTests.exe"
 if($LASTEXITCODE){throw 'Road tests failed'}

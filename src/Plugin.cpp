@@ -15,6 +15,7 @@
 #include "UpdateNotice.h"
 #include "Version.h"
 #include "DiagnosticGate.h"
+#include "ExecutableHash.h"
 
 namespace {
 HMODULE module;
@@ -36,16 +37,6 @@ bool Read(uint32_t p,void* dst,size_t n){SIZE_T got=0;return p>=0x10000&&p<=UINT
 template<class T>bool Get(uint32_t p,T& value){return Read(p,&value,sizeof(value));}
 bool Match(uint32_t p,const char* bytes){unsigned char b[64]{};auto n=strlen(bytes)/2;if(n>64||!Read(p,b,n))return false;for(size_t i=0;i<n;i++){unsigned x=0;sscanf_s(bytes+i*2,"%2x",&x);if(b[i]!=x)return false;}return true;}
 bool Method(uint32_t obj,unsigned index,uint32_t expected){uint32_t vt=0,f=0;return Get(obj,vt)&&vt>=0x890000&&vt<0x8f0000&&Get(vt+4*index,f)&&f==expected;}
-bool Hash(char (&out)[65]){
- wchar_t path[MAX_PATH];if(!GetModuleFileNameW(nullptr,path,MAX_PATH))return false;
- HANDLE f=CreateFileW(path,GENERIC_READ,FILE_SHARE_READ,nullptr,OPEN_EXISTING,0,nullptr);if(f==INVALID_HANDLE_VALUE)return false;
- LARGE_INTEGER size{};if(!GetFileSizeEx(f,&size)||size.QuadPart!=6029312){CloseHandle(f);return false;}
- BCRYPT_ALG_HANDLE alg=nullptr;BCRYPT_HASH_HANDLE h=nullptr;bool ok=BCryptOpenAlgorithmProvider(&alg,BCRYPT_SHA256_ALGORITHM,nullptr,0)>=0;
- if(ok)ok=BCryptCreateHash(alg,&h,nullptr,0,nullptr,0,0)>=0;BYTE buf[32768],digest[32];DWORD n=0;
- while(ok){if(!ReadFile(f,buf,sizeof(buf),&n,nullptr)){ok=false;break;}if(!n)break;ok=BCryptHashData(h,buf,n,0)>=0;}
- if(ok)ok=BCryptFinishHash(h,digest,32,0)>=0;if(h)BCryptDestroyHash(h);if(alg)BCryptCloseAlgorithmProvider(alg,0);CloseHandle(f);
- if(ok)for(size_t i=0;i<32;i++)sprintf_s(out+i*2,65-i*2,"%02x",digest[i]);return ok;
-}
 bool Running(){uint32_t flow=0,time=0,state=0;BYTE overlay=0;int a=0,b=0;DWORD pid=0;GetWindowThreadProcessId(GetForegroundWindow(),&pid);
  return pid==GetCurrentProcessId()&&Get(0x925e90,flow)&&flow==6&&Get(0x9885e0,time)&&time&&Get(time+0x2c,state)&&state!=4&&Get(0x9b0fb9,overlay)&&!overlay&&Get(0x9b41fc,a)&&a<=0&&Get(0x9b4220,b)&&b<=0;
 }
@@ -211,7 +202,12 @@ DWORD WINAPI Initialize(void*){
  GetModuleFileNameW(module,ini,MAX_PATH);auto dot=wcsrchr(ini,L'.');if(!dot)return 0;wcscpy_s(dot,5,L".ini");wcscpy_s(logPath,ini);wcscpy_s(wcsrchr(logPath,L'.'),5,L".log");
  Log("ActionNitro %s pid=%lu",an::version,GetCurrentProcessId());
  if(!GetPrivateProfileIntW(L"ActionNitro",L"Enabled",1,ini)){Log("DISABLED");return 0;}
- char hash[65]{};if(!Hash(hash)||(strcmp(hash,"80774c2e5d619b4f120b48d4462896fd504c263399d203a238769cffde1d253c")&&strcmp(hash,"b248271bf8eac8c9b283b8c95e3add672b713bf529b05f1780e58268493b9d06"))||reinterpret_cast<uint32_t>(GetModuleHandleW(nullptr))!=0x400000){Log("REJECTED unsupported executable hash=%s",hash);return 0;}
+ char hash[65]{};std::uint64_t fileSize=0;wchar_t executable[MAX_PATH]{};
+ const DWORD pathLength=GetModuleFileNameW(nullptr,executable,MAX_PATH);
+ const bool hashed=pathLength&&pathLength<MAX_PATH&&an::hashExecutable(executable,hash,fileSize);
+ const auto* target=hashed?an::findExecutable(fileSize,hash):nullptr;
+ if(!target||reinterpret_cast<uint32_t>(GetModuleHandleW(nullptr))!=0x400000){Log("REJECTED unsupported executable size=%llu hash=%s",fileSize,hash);return 0;}
+ Log("HOST target=%s size=%llu sha256=%s",target->id,fileSize,hash);
  observe=GetPrivateProfileIntW(L"ActionNitro",L"ObserveOnly",1,ini)!=0;hudEnabled=GetPrivateProfileIntW(L"HUD",L"Enabled",1,ini)!=0;
  driftLink=GetPrivateProfileIntW(L"ActionNitro",L"OptionalArcadeDrift",1,ini)!=0;
  language=&an::loadLanguage(ini);bitmap.setFont(language->font);Log("LANGUAGE selected=%ls",language->code);

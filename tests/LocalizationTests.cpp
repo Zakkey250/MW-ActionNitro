@@ -14,6 +14,9 @@ int main(int argc,char** argv){
  require(is(an::resolveLocale(L"fr",L"German",L"Japanese",L"English.bin"),L"fr"),"explicit HUD language first");
  require(is(an::resolveLocale(L"auto",L"German",L"Japanese",L"English.bin"),L"de"),"WSF override precedes registry");
  require(is(an::resolveLocale(L"auto",L"",L"Japanese",L"English.bin"),L"ja"),"bridge English-slot game follows Japanese registry");
+ require(is(an::resolveLocale(L"auto",L"",L"Japanese",L"English.bin",L"English"),L"en"),"Redux local settings beat another install's global registry");
+ require(is(an::resolveLocale(L"auto",L"German",L"Japanese",L"English.bin",L"English"),L"de"),"WSF explicit language beats saved settings");
+ require(is(an::resolveLocale(L"ja",L"",L"English",L"English.bin",L"English"),L"ja"),"explicit HUD overrides saved language");
  require(is(an::resolveLocale(L"auto",L"",L"",L"LANGUAGES\\Russian.bin"),L"ru"),"native filename fallback");
  require(is(an::resolveLocale(L"auto",L"unknown",L"unknown",L""),L"en"),"unknown falls back to English");
  require(is(an::resolveLocale(L"unknown",L"Japanese",L"",L""),L"en"),"invalid explicit setting safe English");

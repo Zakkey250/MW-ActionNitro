@@ -80,11 +80,11 @@ inline const Locale* findLocale(std::wstring_view value){
  }}return nullptr;
 }
 inline const Locale& resolveLocale(std::wstring_view explicitLanguage,std::wstring_view widescreen,
-                                  std::wstring_view registry,std::wstring_view nativeFile){
+                                  std::wstring_view registry,std::wstring_view nativeFile,std::wstring_view savedSettings=L""){
  // A named override is authoritative. Unknown explicit names fall back to English.
  const auto setting=normalizeLanguage(explicitLanguage);
  if(!setting.empty()&&setting!=L"auto"){auto p=findLocale(setting);return p?*p:locales[0];}
- for(auto value:{widescreen,registry,nativeFile})if(auto p=findLocale(value))return *p;
+ for(auto value:{widescreen,savedSettings,registry,nativeFile})if(auto p=findLocale(value))return *p;
  return locales[0];
 }
 inline std::wstring updateBody(const Locale& l,std::wstring_view current,std::wstring_view latest){

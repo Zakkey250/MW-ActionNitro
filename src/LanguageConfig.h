@@ -1,9 +1,28 @@
 #pragma once
 #include <windows.h>
 #include <filesystem>
+#include <shlobj.h>
 #include "Localization.h"
 #pragma comment(lib,"advapi32.lib")
+#pragma comment(lib,"shell32.lib")
 namespace an {
+inline std::wstring savedLanguage(const std::filesystem::path& wsf,const std::filesystem::path& game){
+ if(!GetPrivateProfileIntW(L"MISC",L"WriteSettingsToFile",0,wsf.c_str()))return {};
+ wchar_t directory[1024]{},language[128]{};
+ GetPrivateProfileStringW(L"MISC",L"CustomUserFilesDirectoryInGameDir",L"0",directory,1024,wsf.c_str());
+ std::wstring folder(directory);folder=folder.substr(0,folder.find(L';'));
+ const auto first=folder.find_first_not_of(L" \t");
+ folder=first==folder.npos?L"":folder.substr(first,folder.find_last_not_of(L" \t")-first+1);
+ std::filesystem::path base;
+ if(folder.empty()||folder==L"0"){
+  wchar_t documents[MAX_PATH]{};if(FAILED(SHGetFolderPathW(nullptr,CSIDL_PERSONAL,nullptr,SHGFP_TYPE_CURRENT,documents)))return {};
+  base=documents;
+ }else base=game/folder;
+ const auto settings=base/L"NFS Most Wanted"/L"Settings.ini";
+ // Read only the language, never account/registration values in the same file.
+ GetPrivateProfileStringW(L"Need for Speed Most Wanted",L"Language",L"",language,128,settings.c_str());
+ return language;
+}
 inline const Locale& loadLanguage(const wchar_t* ini){
  wchar_t explicitLanguage[128]{},widescreen[128]{},registry[128]{},nativeFile[128]{};
  GetPrivateProfileStringW(L"HUD",L"Language",L"auto",explicitLanguage,128,ini);
@@ -25,6 +44,6 @@ inline const Locale& loadLanguage(const wchar_t* ini){
    if(complete)MultiByteToWideChar(CP_ACP,0,value,-1,nativeFile,128);break;
   }
  }
- return resolveLocale(explicitLanguage,widescreen,registry,nativeFile);
+ return resolveLocale(explicitLanguage,widescreen,registry,nativeFile,savedLanguage(wsf,wsf.parent_path().parent_path()));
 }
 }

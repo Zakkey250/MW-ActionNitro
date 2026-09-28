@@ -8,7 +8,12 @@ $taskDefaults=Join-Path (Split-Path $taskBinary) 'NFSMWActionNitro.ini'
 $taskRoot=(Resolve-Path -LiteralPath $GameDirectory).Path
 $taskExe=Join-Path $taskRoot 'speed.exe'
 $taskHash=(Get-FileHash -LiteralPath $taskExe -Algorithm SHA256).Hash
-if((Get-Item -LiteralPath $taskExe).Length -ne 6029312 -or $taskHash -notin @('80774C2E5D619B4F120B48D4462896FD504C263399D203A238769CFFDE1D253C','B248271BF8EAC8C9B283B8C95E3ADD672B713BF529B05F1780E58268493B9D06')){throw 'Unsupported executable; nothing installed.'}
+$taskTargets=@{
+ '80774C2E5D619B4F120B48D4462896FD504C263399D203A238769CFFDE1D253C'=6029312
+ 'B248271BF8EAC8C9B283B8C95E3ADD672B713BF529B05F1780E58268493B9D06'=6029312
+ '0C5675A08CD71FD6D31CA87E992A915054BD8B80D268BFF0561D7ECC2067E342'=5926912
+}
+if(-not $taskTargets.ContainsKey($taskHash) -or (Get-Item -LiteralPath $taskExe).Length -ne $taskTargets[$taskHash]){throw 'Unsupported executable; nothing installed.'}
 $taskRunning=Get-CimInstance Win32_Process -Filter "Name='speed.exe' OR Name='nfsMW.exe'"
 foreach($taskProcess in $taskRunning){if(-not $taskProcess.ExecutablePath -or (Split-Path $taskProcess.ExecutablePath) -eq $taskRoot){throw 'Close the game before installation.'}}
 if(-not (Test-Path -LiteralPath $taskBinary) -or -not (Test-Path -LiteralPath $taskDefaults)){throw 'Missing ASI or default INI.'}

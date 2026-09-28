@@ -11,11 +11,12 @@ root = pathlib.Path(__file__).resolve().parents[1]
 target = pathlib.Path(sys.argv[1])
 data = target.read_bytes()
 digest = hashlib.sha256(data).hexdigest()
-allowed = {
-    "80774c2e5d619b4f120b48d4462896fd504c263399d203a238769cffde1d253c",
-    "b248271bf8eac8c9b283b8c95e3add672b713bf529b05f1780e58268493b9d06",
-}
-assert len(data) == 6029312 and digest in allowed, "unsupported executable"
+policy = (root / 'src/ExecutableTargets.h').read_text(encoding='utf-8')
+allowed = {(int(size), sha) for size, sha in re.findall(r'",(\d+),"([0-9a-f]{64})"', policy)}
+installer = (root / 'tools/Install.ps1').read_text(encoding='utf-8-sig')
+installer_allowed = {(int(size), sha.lower()) for sha, size in re.findall(r"'([A-F0-9]{64})'=(\d+)", installer)}
+assert len(allowed) == 3 and installer_allowed == allowed, "installer/runtime target policy mismatch"
+assert (len(data), digest) in allowed, "unsupported executable"
 pe = pefile.PE(data=data)
 assert pe.OPTIONAL_HEADER.ImageBase == 0x400000
 source = (root / "src/Plugin.cpp").read_text(encoding="utf-8")

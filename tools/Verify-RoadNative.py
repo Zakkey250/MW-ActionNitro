@@ -2,6 +2,7 @@
 Reads the locally installed game only; does not run or modify it.
 """
 import hashlib
+import re
 import json
 import pathlib
 import struct
@@ -14,9 +15,9 @@ from unicorn.x86_const import UC_X86_REG_ESP
 root = pathlib.Path(__file__).resolve().parents[1]
 game = pathlib.Path(sys.argv[1])
 exe = (game / 'speed.exe').read_bytes()
-assert hashlib.sha256(exe).hexdigest() in {
- '80774c2e5d619b4f120b48d4462896fd504c263399d203a238769cffde1d253c',
- 'b248271bf8eac8c9b283b8c95e3add672b713bf529b05f1780e58268493b9d06'}
+policy = (root / 'src/ExecutableTargets.h').read_text(encoding='utf-8')
+allowed = {(int(size), sha) for size, sha in re.findall(r'",(\d+),"([0-9a-f]{64})"', policy)}
+assert (len(exe), hashlib.sha256(exe).hexdigest()) in allowed
 pe = pefile.PE(data=exe)
 blob = (game / 'TRACKS/L2RA.BUN').read_bytes()
 header = blob.rfind(b'PRAC', 0, blob.find(b'dnNR'))
