@@ -65,6 +65,10 @@ Visual Studio Build Tools 2022 (v143, C++ desktop tools and Windows SDK), Win32,
 
 Third-party code: MinHook and nlohmann/json. Their licenses are preserved under `third_party` and in the binary ZIP. The project contains no game assets or game executable.
 
+## License
+
+Original project code and documentation are licensed under the [MIT License](LICENSE). MinHook and nlohmann/json retain their respective licenses. The MIT License grants no rights to *Need for Speed* or other third-party material.
+
 ## Alpha.7: shared Redux / Main binary
 
 Adds the verified Redux 3.04 executable as an exact size/hash pair, retaining all live hook guards. No separate Redux ASI or loader replacement is needed. Local Widescreen Fix settings now take precedence over another installation's registry language. Gameplay predicates, rewards and rendering are unchanged from alpha.6.

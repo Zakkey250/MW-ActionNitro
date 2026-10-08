@@ -72,3 +72,7 @@ Visual Studio Build Tools 2022、v143、Windows SDK、Win32、C++17で `tools/Bu
 Redux 3.04の確認済みEXEをサイズとSHA256の組で識別します。フック箇所の保護検査は維持し、判定・回復量・描画を変更せず、専用の別ASIも不要です。ReduxのSAVE内Settings.iniを参照し、同じPCのMain側レジストリ言語を誤って優先しないようにしました。
 
 両環境の実EXEを出荷用SHA256処理で確認し、11箇所の静的検査とReduxの3260件のネイティブ車線選択比較、隔離ビルド・試験が通過しました。Reduxでの起動時フック共存、NOS/HUD表示、試走の確認は未実施です。
+
+## ライセンス
+
+本プロジェクトの独自コードと文書は[MIT License](LICENSE)で公開します。MinHookとnlohmann/jsonには、それぞれのライセンスが引き続き適用されます。MIT Licenseは『Need for Speed』その他の第三者素材に関する権利を付与するものではありません。
